@@ -1,10 +1,10 @@
 {
   "files": {
-    "main.css": "/react-gh-pages/static/css/main.e6c13ad2.css",
-    "main.js": "/react-gh-pages/static/js/main.87f89415.js",
-    "index.html": "/react-gh-pages/index.html",
-    "main.e6c13ad2.css.map": "/react-gh-pages/static/css/main.e6c13ad2.css.map",
-    "main.87f89415.js.map": "/react-gh-pages/static/js/main.87f89415.js.map"
+    "main.css": "/accounting-app/static/css/main.e6c13ad2.css",
+    "main.js": "/accounting-app/static/js/main.87f89415.js",
+    "index.html": "/accounting-app/index.html",
+    "main.e6c13ad2.css.map": "/accounting-app/static/css/main.e6c13ad2.css.map",
+    "main.87f89415.js.map": "/accounting-app/static/js/main.87f89415.js.map"
   },
   "entrypoints": [
     "static/css/main.e6c13ad2.css",
