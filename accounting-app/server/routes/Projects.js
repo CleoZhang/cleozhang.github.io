@@ -24,7 +24,11 @@ router.get("/", async (req, res) => {
 });
 
 // Create a single project
-router.post("/", async (req, res) => res.json(await Projects.create(req.body)))
+// router.post("/", async (req, res) => res.json(await Projects.create(req.body)))
+router.post("/", async (req, res) => {
+    await Projects.create(req.body);
+    res.json(await Projects.findAll());
+});
 
 // Delete a single project by ID
 router.delete("/", async (req, res) => {
