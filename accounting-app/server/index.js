@@ -7,9 +7,9 @@ app.use(cors());
 
 const db = require('./models');
 
-// Routers
-const userRouter = require('./routes/Users')
-app.use("/users", userRouter)
+// Routers - app.use(route, router)
+app.use("/users", require('./routes/Users'))
+app.use("/projects", require('./routes/Projects'))
 
 db.sequelize.sync().then(() => {
     app.listen(3001, () => {
