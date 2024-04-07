@@ -1,6 +1,7 @@
 module.exports = (sequelize, DataTypes) => {
 
-    return Projects = sequelize.define("Projects", {
+    // Revenue and expense categories table.
+    return RECategories = sequelize.define("RECategories", {
         id: {
             type:  DataTypes.INTEGER,
             allowNull: false,
@@ -8,11 +9,6 @@ module.exports = (sequelize, DataTypes) => {
             primaryKey: true
         },
         name: {
-            type:  DataTypes.STRING,
-            allowNull: false,
-            unique: true
-        },
-        shortname: {
             type:  DataTypes.STRING,
             allowNull: false,
             unique: true

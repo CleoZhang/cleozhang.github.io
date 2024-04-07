@@ -8,44 +8,57 @@ import {
 } from "formik";
 import React from "react";
 import styles from "./Input.module.scss";
-import { Focusable, classNames } from "./utils";
+import { Focusable, classNames } from "./";
 import { TextButton } from "./Button";
 
-type FormikInputs = {
-  label?: string;
-  inputName: string;
-};
-
-export function FormikInput<
+export function FormikForm<
   Values extends FormikValues = FormikValues,
   ExtraProps = {}
 >(
   props: FormikConfig<Values> &
     ExtraProps & {
       inputId: string;
-      formikInputs: FormikInputs[];
+      formikInputs: FormikInputProps[];
       submitButtonName?: string;
+      formId?: string;
     }
 ) {
   return (
     <Formik {...props}>
-      <Form>
-        {props.formikInputs.map((fi) => (
-          <>
-            {fi.label && <label>{fi.label}</label>}
-            <Field id={props.inputId} name={fi.inputName} />
-            <ErrorMessage
-              name={fi.inputName}
-              component="span"
-              className={styles.error}
-            />
-          </>
+      <Form id={props.formId}>
+        {props.formikInputs.map((fi, index) => (
+          <FormikInput key={index} {...fi} inputId={props.inputId} />
         ))}
         {props.submitButtonName && (
           <TextButton text={props.submitButtonName} type="submit" />
         )}
       </Form>
     </Formik>
+  );
+}
+type FormikInputProps = {
+  label?: string;
+  inputName: string;
+  formId?: string;
+  validate?: any;
+};
+
+export function FormikInput(props: FormikInputProps & { inputId: string }) {
+  return (
+    <div>
+      {props.label && <label>{props.label}</label>}
+      <Field
+        id={props.inputId}
+        name={props.inputName}
+        form={props.formId}
+        validate={props.validate}
+      />
+      <ErrorMessage
+        name={props.inputName}
+        component="span"
+        className={styles.error}
+      />
+    </div>
   );
 }
 

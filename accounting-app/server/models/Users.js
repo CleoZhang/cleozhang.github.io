@@ -1,6 +1,6 @@
 module.exports = (sequelize, DataTypes) => {
 
-    const Users = sequelize.define("Users", {
+    return Users = sequelize.define("Users", {
         id: {
             type:  DataTypes.INTEGER,
             allowNull: false,
@@ -22,6 +22,4 @@ module.exports = (sequelize, DataTypes) => {
             defaultValue: false
         },
     });
-
-    return Users
 }

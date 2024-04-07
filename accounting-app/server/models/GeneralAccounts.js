@@ -1,6 +1,6 @@
 module.exports = (sequelize, DataTypes) => {
 
-    const GeneralAccounts = sequelize.define("GeneralAccounts", {
+    return GeneralAccounts = sequelize.define("GeneralAccounts", {
         id: {
             type:  DataTypes.INTEGER,
             allowNull: false,
@@ -13,6 +13,4 @@ module.exports = (sequelize, DataTypes) => {
             unique: true
         }
     });
-
-    return GeneralAccounts
 }

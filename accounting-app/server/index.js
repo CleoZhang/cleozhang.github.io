@@ -10,6 +10,7 @@ const db = require('./models');
 // Routers - app.use(route, router)
 app.use("/users", require('./routes/Users'))
 app.use("/projects", require('./routes/Projects'))
+app.use("/recategories", require('./routes/RECategories'))
 
 db.sequelize.sync().then(() => {
     app.listen(3001, () => {

@@ -22,18 +22,27 @@ export function TextButton(props: TextButtonProps) {
 }
 
 type SvgButtonProps = {
-  onClick?: React.MouseEventHandler<SVGSVGElement>;
+  onClick?: React.MouseEventHandler<HTMLButtonElement>;
   icon: IconDefinition;
   title?: string;
+  type?: "submit" | "button" | "reset";
+  form?: string;
+  disabled?: boolean;
 };
 
 export function SvgButton(props: SvgButtonProps) {
   return (
-    <FontAwesomeIcon
-      icon={props.icon}
+    <button
+      type={props.type}
       onClick={props.onClick}
-      title={props.title}
-      className={styles.button}
-    />
+      form={props.form}
+      disabled={props.disabled}
+    >
+      <FontAwesomeIcon
+        icon={props.icon}
+        title={props.title}
+        className={styles.button}
+      />
+    </button>
   );
 }

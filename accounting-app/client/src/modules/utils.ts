@@ -1,12 +1,3 @@
-export type IdWithDisplayName = {
-    id: number;
-    name: string;
-}
-
-export type Focusable = {
-    focus: () => void;
-  };
-
 export function newUpdatedArray<T>(
     array: T[],
     selector: ((item: T, index: number, array: T[]) => boolean) | null,

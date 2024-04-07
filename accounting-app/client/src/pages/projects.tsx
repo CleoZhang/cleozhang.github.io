@@ -1,49 +1,33 @@
 import React from "react";
 import styles from "./projects.module.scss";
-import axios from "axios";
 import * as Yup from "yup";
 import { faPen, faCheck } from "@fortawesome/free-solid-svg-icons";
 import { faTrashCan } from "@fortawesome/free-regular-svg-icons";
-import { TextButton, SvgButton, newUpdatedObject } from "../modules";
-import { FormikInput, TextInput } from "../modules/Input";
+import {
+  TextButton,
+  SvgButton,
+  newUpdatedObject,
+  IdWithDisplayNames,
+  axiosGetAll,
+  axiosCreate,
+  axiosDelete,
+  axiosUpdate,
+  yupReqStr,
+  FormikForm,
+  TextInput,
+} from "../modules";
 
-const projectsRoot = "http://localhost:3001/projects";
+const route = "projects";
 
-const endpoints = {
-  root: projectsRoot,
-  bulk: `${projectsRoot}/bulk`,
-  all: `${projectsRoot}/all`,
-  update: `${projectsRoot}/update`,
-};
-
-type IdWithDisplayNames = { id: number } & DisplayNames;
-
-type DisplayNames = {
-  name: string;
-  shortname: string;
-};
-
-type Project = IdWithDisplayNames;
-
-function getYup(existingNames: string[]) {
-  return Yup.string()
-    .required("必填")
-    .test(
-      "Unique",
-      "重名",
-      (value) => !existingNames.some((sn) => sn === value)
-    );
-}
-
-type ProjectRowProps = {
-  project: Project;
+type RowProps = {
+  project: IdWithDisplayNames;
   editMode: boolean;
   onDelete: (projectId: number) => void;
-  onEdit: (project: Project) => void;
-  otherProjects: Project[];
+  onEdit: (project: IdWithDisplayNames) => void;
+  otherProjects: IdWithDisplayNames[];
 };
 
-function ProjectRow(props: ProjectRowProps) {
+function Row(props: RowProps) {
   const { project, editMode, onDelete } = { ...props };
   const [editNames, setEditNames] = React.useState(false);
   const [name, setName] = React.useState(project.name);
@@ -54,15 +38,7 @@ function ProjectRow(props: ProjectRowProps) {
       <td>{project.id}</td>
       <td>
         {editNames ? (
-          <FormikInput
-            initialValues={{ name }}
-            validationSchema={Yup.object().shape({
-              name: getYup(props.otherProjects.map((p) => p.name)),
-            })}
-            formikInputs={[{ inputName: "name" }]}
-            inputId="editName"
-            onSubmit={(newObj) => setName(newObj.name)}
-          />
+          <TextInput value={name} onChange={setName} />
         ) : (
           <>{project.name}</>
         )}
@@ -80,9 +56,20 @@ function ProjectRow(props: ProjectRowProps) {
             {editNames ? (
               <SvgButton
                 icon={faCheck}
+                disabled={name === "" || shortname === ""}
                 onClick={() => {
-                  props.onEdit(newUpdatedObject(project, { name, shortname }));
-                  setEditNames(!editNames);
+                  if (
+                    props.otherProjects.some(
+                      (p) => p.name === name || p.shortname === shortname
+                    )
+                  ) {
+                    alert(`无法更改项目${project.id}: 项目名称/简称有重复`);
+                  } else {
+                    props.onEdit(
+                      newUpdatedObject(project, { name, shortname })
+                    );
+                    setEditNames(!editNames);
+                  }
                 }}
                 title={`保存'${project.name}'`}
               />
@@ -107,41 +94,12 @@ function ProjectRow(props: ProjectRowProps) {
   );
 }
 
-function Projects() {
-  const [projects, setProjects] = React.useState<Project[]>([]);
+function ProjectsPage() {
+  const [projects, setProjects] = React.useState<IdWithDisplayNames[]>([]);
   const [editMode, setEditMode] = React.useState(false);
   const maxProjectId = Math.max(...projects.map((p) => p.id));
 
-  React.useEffect(() => {
-    axios.get(endpoints.all).then((response) => {
-      setProjects(response.data);
-    });
-  }, []);
-
-  function onCreate(
-    newNames: DisplayNames,
-    actions: { resetForm: () => void }
-  ) {
-    const newProject = { id: maxProjectId + 1, ...newNames };
-    axios.post(endpoints.root, newProject).then((response) => {
-      setProjects(response.data);
-      actions.resetForm();
-    });
-  }
-
-  function onDelete(projectId: number) {
-    axios
-      .delete(endpoints.root, { data: { id: projectId } })
-      .then((response) => {
-        setProjects(response.data);
-      });
-  }
-
-  function onEdit(newProject: Project) {
-    axios.post(endpoints.update, newProject).then((response) => {
-      setProjects(response.data);
-    });
-  }
+  React.useEffect(() => axiosGetAll(route, setProjects), []);
 
   return (
     <>
@@ -165,12 +123,12 @@ function Projects() {
         </thead>
         <tbody>
           {projects.map((project) => (
-            <ProjectRow
+            <Row
               key={project.id}
               project={project}
               editMode={editMode}
-              onDelete={onDelete}
-              onEdit={onEdit}
+              onDelete={(id) => axiosDelete(route, id, setProjects)}
+              onEdit={(project) => axiosUpdate(route, project, setProjects)}
               otherProjects={projects.filter((p) => p.id !== project.id)}
             />
           ))}
@@ -179,12 +137,19 @@ function Projects() {
 
       {editMode && (
         <>
-          <FormikInput
+          <FormikForm
             initialValues={{ name: "", shortname: "" }}
-            onSubmit={onCreate}
+            onSubmit={(newNames, actions) =>
+              axiosCreate(
+                route,
+                { id: maxProjectId + 1, ...newNames },
+                setProjects,
+                actions.resetForm
+              )
+            }
             validationSchema={Yup.object().shape({
-              name: getYup(projects.map((p) => p.name)),
-              shortname: getYup(projects.map((p) => p.shortname)),
+              name: yupReqStr(projects.map((p) => p.name)),
+              shortname: yupReqStr(projects.map((p) => p.shortname)),
             })}
             inputId="createProject"
             formikInputs={[
@@ -199,4 +164,4 @@ function Projects() {
   );
 }
 
-export default Projects;
+export default ProjectsPage;
