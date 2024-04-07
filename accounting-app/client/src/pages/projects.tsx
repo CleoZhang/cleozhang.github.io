@@ -51,6 +51,7 @@ function ProjectRow(props: ProjectRowProps) {
 
   return (
     <tr key={project.id}>
+      <td>{project.id}</td>
       <td>
         {editNames ? (
           <FormikInput
@@ -109,6 +110,7 @@ function ProjectRow(props: ProjectRowProps) {
 function Projects() {
   const [projects, setProjects] = React.useState<Project[]>([]);
   const [editMode, setEditMode] = React.useState(false);
+  const maxProjectId = Math.max(...projects.map((p) => p.id));
 
   React.useEffect(() => {
     axios.get(endpoints.all).then((response) => {
@@ -117,10 +119,11 @@ function Projects() {
   }, []);
 
   function onCreate(
-    newProjects: DisplayNames,
+    newNames: DisplayNames,
     actions: { resetForm: () => void }
   ) {
-    axios.post(endpoints.root, newProjects).then((response) => {
+    const newProject = { id: maxProjectId + 1, ...newNames };
+    axios.post(endpoints.root, newProject).then((response) => {
       setProjects(response.data);
       actions.resetForm();
     });
@@ -146,25 +149,10 @@ function Projects() {
         text={editMode ? "取消编辑模式" : "编辑模式"}
         onClick={() => setEditMode(!editMode)}
       />
-      {editMode && (
-        <FormikInput
-          initialValues={{ name: "", shortname: "" }}
-          onSubmit={onCreate}
-          validationSchema={Yup.object().shape({
-            name: getYup(projects.map((p) => p.name)),
-            shortname: getYup(projects.map((p) => p.shortname)),
-          })}
-          inputId="createProject"
-          formikInputs={[
-            { label: "项目名称", inputName: "name" },
-            { label: "简称", inputName: "shortname" },
-          ]}
-          submitButtonName="创建"
-        />
-      )}
       <table className={styles.projects}>
         <thead>
           <tr>
+            <th>编号</th>
             <th>项目名称</th>
             <th>简称</th>
             {editMode && (
@@ -188,6 +176,25 @@ function Projects() {
           ))}
         </tbody>
       </table>
+
+      {editMode && (
+        <>
+          <FormikInput
+            initialValues={{ name: "", shortname: "" }}
+            onSubmit={onCreate}
+            validationSchema={Yup.object().shape({
+              name: getYup(projects.map((p) => p.name)),
+              shortname: getYup(projects.map((p) => p.shortname)),
+            })}
+            inputId="createProject"
+            formikInputs={[
+              { label: "新建项目名称", inputName: "name" },
+              { label: "简称", inputName: "shortname" },
+            ]}
+            submitButtonName="创建"
+          />
+        </>
+      )}
     </>
   );
 }
