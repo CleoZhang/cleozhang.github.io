@@ -1,3 +1,7 @@
+export type IdWithDisplayName = {
+    id: number;
+    name: string;
+}
 
 export type Focusable = {
     focus: () => void;

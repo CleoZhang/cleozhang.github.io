@@ -1,7 +1,6 @@
 import React from "react";
 import styles from "./projects.module.scss";
 import axios from "axios";
-import { Formik, Form } from "formik";
 import * as Yup from "yup";
 import { faPen, faCheck } from "@fortawesome/free-solid-svg-icons";
 import { faTrashCan } from "@fortawesome/free-regular-svg-icons";
@@ -26,11 +25,22 @@ type DisplayNames = {
 
 type Project = IdWithDisplayNames;
 
+function getYup(existingNames: string[]) {
+  return Yup.string()
+    .required("必填")
+    .test(
+      "Unique",
+      "重名",
+      (value) => !existingNames.some((sn) => sn === value)
+    );
+}
+
 type ProjectRowProps = {
   project: Project;
   editMode: boolean;
   onDelete: (projectId: number) => void;
   onEdit: (project: Project) => void;
+  otherProjects: Project[];
 };
 
 function ProjectRow(props: ProjectRowProps) {
@@ -43,7 +53,15 @@ function ProjectRow(props: ProjectRowProps) {
     <tr key={project.id}>
       <td>
         {editNames ? (
-          <TextInput value={name} onChange={setName} />
+          <FormikInput
+            initialValues={{ name }}
+            validationSchema={Yup.object().shape({
+              name: getYup(props.otherProjects.map((p) => p.name)),
+            })}
+            formikInputs={[{ inputName: "name" }]}
+            inputId="editName"
+            onSubmit={(newObj) => setName(newObj.name)}
+          />
         ) : (
           <>{project.name}</>
         )}
@@ -98,14 +116,7 @@ function Projects() {
     });
   }, []);
 
-  const initialValues = { name: "", shortname: "" };
-
-  const validationSchema = Yup.object().shape({
-    name: Yup.string().required("必填"),
-    shortname: Yup.string().required("必填"),
-  });
-
-  function onSubmit(
+  function onCreate(
     newProjects: DisplayNames,
     actions: { resetForm: () => void }
   ) {
@@ -122,21 +133,6 @@ function Projects() {
         setProjects(response.data);
       });
   }
-  // function onDelete(projectId: number) {
-  //   setProjects((prev) =>
-  //     newUpdatedArray(prev, (project) => project.id === projectId, null)
-  //   );
-  // }
-
-  // function onEdit(newProject: Project) {
-  //   setProjects((prev) =>
-  //     newUpdatedArray(
-  //       prev,
-  //       (project) => project.id === newProject.id,
-  //       newProject
-  //     )
-  //   );
-  // }
 
   function onEdit(newProject: Project) {
     axios.post(endpoints.update, newProject).then((response) => {
@@ -151,25 +147,20 @@ function Projects() {
         onClick={() => setEditMode(!editMode)}
       />
       {editMode && (
-        <Formik
-          initialValues={initialValues}
-          onSubmit={onSubmit}
-          validationSchema={validationSchema}
-        >
-          <Form>
-            <FormikInput
-              label="项目名称"
-              formikId="inputCreateProject"
-              formikName="name"
-            />
-            <FormikInput
-              label="简称"
-              formikId="inputCreateProject"
-              formikName="shortname"
-            />
-            <TextButton text="创建" type="submit" />
-          </Form>
-        </Formik>
+        <FormikInput
+          initialValues={{ name: "", shortname: "" }}
+          onSubmit={onCreate}
+          validationSchema={Yup.object().shape({
+            name: getYup(projects.map((p) => p.name)),
+            shortname: getYup(projects.map((p) => p.shortname)),
+          })}
+          inputId="createProject"
+          formikInputs={[
+            { label: "项目名称", inputName: "name" },
+            { label: "简称", inputName: "shortname" },
+          ]}
+          submitButtonName="创建"
+        />
       )}
       <table className={styles.projects}>
         <thead>
@@ -192,6 +183,7 @@ function Projects() {
               editMode={editMode}
               onDelete={onDelete}
               onEdit={onEdit}
+              otherProjects={projects.filter((p) => p.id !== project.id)}
             />
           ))}
         </tbody>
