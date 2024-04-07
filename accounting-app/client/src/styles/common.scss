@@ -1,0 +1,28 @@
+@mixin table-style {
+    $borderWidth: 1px;
+    $borderRadius: 4px;
+    border: $borderWidth solid #e8e8e8;
+    border-radius: $borderRadius;
+    border-spacing: 0;
+
+    $borderRadius: $borderRadius - $borderWidth;
+
+    th, td{
+        height: 30px;
+        padding: 0 15px;
+        border-bottom: 1px solid #e8e8e8;
+
+        &:first-child {
+            border-top-left-radius: $borderRadius;
+        }
+
+        &:last-child {
+            border-top-right-radius: $borderRadius;
+        }
+    }
+    th {
+        height: 30px;
+        text-align: left;
+        background-color: #f2f2f2;
+    }
+}
