@@ -24,10 +24,21 @@ router.get("/", async (req, res) => {
 });
 
 // Create a single project
-// router.post("/", async (req, res) => res.json(await Projects.create(req.body)))
 router.post("/", async (req, res) => {
     await Projects.create(req.body);
     res.json(await Projects.findAll());
+});
+
+// Update a single project
+router.post("/update", async (req, res) => {
+    await Projects.update(req.body, {
+        where: {
+            id: req.body.id
+        }
+    });
+    console.log(`Updated project ${req.body.id}`);
+    const updatedProjects = await Projects.findAll();
+    res.json(updatedProjects);
 });
 
 // Delete a single project by ID
@@ -37,6 +48,7 @@ router.delete("/", async (req, res) => {
             id: req.body.id
         }
     });
+    console.log(`Deleted project ${req.body.id}`);
     res.json(await Projects.findAll());
 })
 

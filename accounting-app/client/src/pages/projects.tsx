@@ -1,12 +1,12 @@
 import React from "react";
 import styles from "./projects.module.scss";
 import axios from "axios";
-import { Formik, Form, Field, ErrorMessage, useFormik } from "formik";
+import { Formik, Form } from "formik";
 import * as Yup from "yup";
-import { faPen } from "@fortawesome/free-solid-svg-icons";
+import { faPen, faCheck } from "@fortawesome/free-solid-svg-icons";
 import { faTrashCan } from "@fortawesome/free-regular-svg-icons";
-import { TextButton, SvgButton } from "../modules";
-import { FormikInput } from "../modules/Input";
+import { TextButton, SvgButton, newUpdatedObject } from "../modules";
+import { FormikInput, TextInput } from "../modules/Input";
 
 const projectsRoot = "http://localhost:3001/projects";
 
@@ -14,6 +14,7 @@ const endpoints = {
   root: projectsRoot,
   bulk: `${projectsRoot}/bulk`,
   all: `${projectsRoot}/all`,
+  update: `${projectsRoot}/update`,
 };
 
 type IdWithDisplayNames = { id: number } & DisplayNames;
@@ -29,28 +30,50 @@ type ProjectRowProps = {
   project: Project;
   editMode: boolean;
   onDelete: (projectId: number) => void;
+  onEdit: (project: Project) => void;
 };
 
 function ProjectRow(props: ProjectRowProps) {
   const { project, editMode, onDelete } = { ...props };
   const [editNames, setEditNames] = React.useState(false);
-
-  function onSubmit(data: DisplayNames) {
-    console.log(data);
-  }
+  const [name, setName] = React.useState(project.name);
+  const [shortname, setShortname] = React.useState(project.shortname);
 
   return (
     <tr key={project.id}>
-      <td>{editNames ? <></> : <>{project.name}</>}</td>
-      <td>{project.shortname}</td>
+      <td>
+        {editNames ? (
+          <TextInput value={name} onChange={setName} />
+        ) : (
+          <>{project.name}</>
+        )}
+      </td>
+      <td>
+        {editNames ? (
+          <TextInput value={shortname} onChange={setShortname} />
+        ) : (
+          <>{project.shortname}</>
+        )}
+      </td>
       {editMode && (
         <>
           <td>
-            <SvgButton
-              icon={faPen}
-              onClick={() => setEditNames(!editNames)}
-              title={`编辑'${project.name}'`}
-            />
+            {editNames ? (
+              <SvgButton
+                icon={faCheck}
+                onClick={() => {
+                  props.onEdit(newUpdatedObject(project, { name, shortname }));
+                  setEditNames(!editNames);
+                }}
+                title={`保存'${project.name}'`}
+              />
+            ) : (
+              <SvgButton
+                icon={faPen}
+                onClick={() => setEditNames(!editNames)}
+                title={`编辑'${project.name}'`}
+              />
+            )}
           </td>
           <td>
             <SvgButton
@@ -67,7 +90,7 @@ function ProjectRow(props: ProjectRowProps) {
 
 function Projects() {
   const [projects, setProjects] = React.useState<Project[]>([]);
-  const [editMode, setEditMode] = React.useState(true);
+  const [editMode, setEditMode] = React.useState(false);
 
   React.useEffect(() => {
     axios.get(endpoints.all).then((response) => {
@@ -75,7 +98,6 @@ function Projects() {
     });
   }, []);
 
-  // let history = useHistory;
   const initialValues = { name: "", shortname: "" };
 
   const validationSchema = Yup.object().shape({
@@ -100,32 +122,54 @@ function Projects() {
         setProjects(response.data);
       });
   }
+  // function onDelete(projectId: number) {
+  //   setProjects((prev) =>
+  //     newUpdatedArray(prev, (project) => project.id === projectId, null)
+  //   );
+  // }
+
+  // function onEdit(newProject: Project) {
+  //   setProjects((prev) =>
+  //     newUpdatedArray(
+  //       prev,
+  //       (project) => project.id === newProject.id,
+  //       newProject
+  //     )
+  //   );
+  // }
+
+  function onEdit(newProject: Project) {
+    axios.post(endpoints.update, newProject).then((response) => {
+      setProjects(response.data);
+    });
+  }
 
   return (
     <>
-      <TextButton text="编辑模式" onClick={() => setEditMode(!editMode)} />
+      <TextButton
+        text={editMode ? "取消编辑模式" : "编辑模式"}
+        onClick={() => setEditMode(!editMode)}
+      />
       {editMode && (
-        <div>
-          <Formik
-            initialValues={initialValues}
-            onSubmit={onSubmit}
-            validationSchema={validationSchema}
-          >
-            <Form>
-              <FormikInput
-                label="项目名称"
-                formikId="inputCreateProject"
-                formikName="name"
-              />
-              <FormikInput
-                label="简称"
-                formikId="inputCreateProject"
-                formikName="shortname"
-              />
-              <TextButton text="创建" type="submit" />
-            </Form>
-          </Formik>
-        </div>
+        <Formik
+          initialValues={initialValues}
+          onSubmit={onSubmit}
+          validationSchema={validationSchema}
+        >
+          <Form>
+            <FormikInput
+              label="项目名称"
+              formikId="inputCreateProject"
+              formikName="name"
+            />
+            <FormikInput
+              label="简称"
+              formikId="inputCreateProject"
+              formikName="shortname"
+            />
+            <TextButton text="创建" type="submit" />
+          </Form>
+        </Formik>
       )}
       <table className={styles.projects}>
         <thead>
@@ -147,6 +191,7 @@ function Projects() {
               project={project}
               editMode={editMode}
               onDelete={onDelete}
+              onEdit={onEdit}
             />
           ))}
         </tbody>

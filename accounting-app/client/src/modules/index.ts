@@ -1,2 +1,3 @@
 export { TextButton, SvgButton } from "./Button";
-export { FormikInput as TextInput } from "./Input";
+export { FormikInput, Input } from "./Input";
+export * from "./utils"
