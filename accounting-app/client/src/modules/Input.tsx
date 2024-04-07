@@ -8,7 +8,7 @@ import {
 } from "formik";
 import React from "react";
 import styles from "./Input.module.scss";
-import { Focusable, classNames } from "./";
+import { Focusable, Key, classNames } from "./";
 import { TextButton } from "./Button";
 
 export function FormikForm<
@@ -120,6 +120,18 @@ export function TextInput(props: TextInputProps) {
         placeholder={props.placeholder}
         aria-required={props.ariaRequired}
         aria-describedby={props.ariaDescribedBy}
+        onKeyDown={
+          props.onEnter
+            ? (e) => {
+                if (e.key === Key.Enter) {
+                  e.preventDefault();
+                  props.onEnter?.(e.target as HTMLInputElement);
+                  //CODEREVIEW
+                  console.log("jhdsgfjdsgf");
+                }
+              }
+            : undefined
+        }
       />
     </div>
   );

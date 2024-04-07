@@ -1,7 +1,6 @@
 import React from "react";
 import styles from "./ObjectViewTable.module.scss";
-import * as Yup from "yup";
-import { faPen, faCheck } from "@fortawesome/free-solid-svg-icons";
+import { faPen, faCheck, faPlus } from "@fortawesome/free-solid-svg-icons";
 import { faTrashCan } from "@fortawesome/free-regular-svg-icons";
 import {
   TextButton,
@@ -11,27 +10,47 @@ import {
   axiosCreate,
   axiosDelete,
   axiosUpdate,
-  yupReqStr,
-  FormikForm,
   TextInput,
   IdWithDisplayName,
 } from ".";
 import { Link } from "react-router-dom";
 
+const devMode: boolean = true;
+
 type RowProps = {
   object: IdWithDisplayName;
   editMode: boolean;
-  onDelete: (objectId: number) => void;
   onEdit: (object: IdWithDisplayName) => void;
   otherObjects: IdWithDisplayName[];
+  onDelete?: (objectId: number) => void;
+  isCreate: boolean;
 };
 
 function Row(props: RowProps) {
-  const { object, editMode, onDelete } = { ...props };
-  const [editNames, setEditNames] = React.useState(false);
+  const { object, editMode, onDelete, isCreate } = { ...props };
+  const [editNames, setEditNames] = React.useState(isCreate);
   const [name, setName] = React.useState(object.name);
   const [shortname, setShortname] = React.useState(object.shortname);
-  const hasShortName = shortname !== undefined;
+  const hasShortName = object.shortname !== undefined;
+  const disabled = name === "" || (hasShortName && shortname === "");
+
+  function onSave() {
+    if (
+      props.otherObjects.some(
+        (p) => p.name === name || (hasShortName && p.shortname === shortname)
+      )
+    ) {
+      alert(`无法${isCreate ? "添加" : "更改"}编号${object.id}: 名称有重复`);
+    } else {
+      props.onEdit(newUpdatedObject(object, { name, shortname }));
+      if (isCreate) {
+        setName("");
+        setShortname("");
+      } else {
+        setEditNames(!editNames);
+      }
+    }
+  }
 
   return (
     <tr key={object.id}>
@@ -46,7 +65,11 @@ function Row(props: RowProps) {
       {hasShortName && (
         <td>
           {editNames ? (
-            <TextInput value={shortname} onChange={setShortname} />
+            <TextInput
+              value={shortname!}
+              onChange={setShortname}
+              onEnter={() => !disabled && onSave()}
+            />
           ) : (
             <>{object.shortname}</>
           )}
@@ -57,22 +80,9 @@ function Row(props: RowProps) {
           <td>
             {editNames ? (
               <SvgButton
-                icon={faCheck}
-                disabled={name === "" || shortname === ""}
-                onClick={() => {
-                  if (
-                    props.otherObjects.some(
-                      (p) =>
-                        p.name === name ||
-                        (hasShortName && p.shortname === shortname)
-                    )
-                  ) {
-                    alert(`无法更改编号${object.id}: 名称有重复`);
-                  } else {
-                    props.onEdit(newUpdatedObject(object, { name, shortname }));
-                    setEditNames(!editNames);
-                  }
-                }}
+                icon={isCreate ? faPlus : faCheck}
+                disabled={disabled}
+                onClick={onSave}
                 title={`保存'${object.name}'`}
               />
             ) : (
@@ -81,14 +91,14 @@ function Row(props: RowProps) {
                 onClick={() => setEditNames(!editNames)}
                 title={`编辑'${object.name}'`}
               />
+            )}{" "}
+            {onDelete !== undefined && (
+              <SvgButton
+                icon={faTrashCan}
+                onClick={() => onDelete(object.id)}
+                title={`删除'${object.name}'`}
+              />
             )}
-          </td>
-          <td>
-            <SvgButton
-              icon={faTrashCan}
-              onClick={() => onDelete(object.id)}
-              title={`删除'${object.name}'`}
-            />
           </td>
         </>
       )}
@@ -98,31 +108,16 @@ function Row(props: RowProps) {
 
 function ObjectViewTable(props: { route: string }) {
   const [objects, setObjects] = React.useState<IdWithDisplayName[]>([]);
-  const [editMode, setEditMode] = React.useState(false);
+  const [editMode, setEditMode] = React.useState(devMode);
   const maxObjectId = Math.max(...objects.map((p) => p.id));
 
   React.useEffect(() => axiosGetAll(props.route, setObjects), [props.route]);
 
   const hasShortName = objects.some((o) => o.shortname !== undefined);
-  const initialValues = hasShortName
-    ? { name: "", shortname: "" }
-    : { name: "" };
-  const validationSchema = Yup.object().shape(
-    hasShortName
-      ? {
-          name: yupReqStr(objects.map((p) => p.name)),
-          shortname: yupReqStr(objects.map((p) => p.shortname!)),
-        }
-      : {
-          name: yupReqStr(objects.map((p) => p.name)),
-        }
-  );
-  const formikInputs = hasShortName
-    ? [
-        { label: "新建", inputName: "name" },
-        { label: "简称", inputName: "shortname" },
-      ]
-    : [{ label: "新建", inputName: "name" }];
+
+  const newObj: IdWithDisplayName = hasShortName
+    ? { id: maxObjectId + 1, name: "", shortname: "" }
+    : { id: maxObjectId + 1, name: "" };
 
   return (
     <>
@@ -138,12 +133,7 @@ function ObjectViewTable(props: { route: string }) {
             <th>编号</th>
             <th>名称</th>
             {hasShortName && <th>简称</th>}
-            {editMode && (
-              <>
-                <th></th>
-                <th></th>
-              </>
-            )}
+            {editMode && <th></th>}
           </tr>
         </thead>
         <tbody>
@@ -155,30 +145,20 @@ function ObjectViewTable(props: { route: string }) {
               onDelete={(id) => axiosDelete(props.route, id, setObjects)}
               onEdit={(object) => axiosUpdate(props.route, object, setObjects)}
               otherObjects={objects.filter((p) => p.id !== obj.id)}
+              isCreate={false}
             />
           ))}
+          {editMode && (
+            <Row
+              object={newObj}
+              editMode={editMode}
+              onEdit={(newObj) => axiosCreate(props.route, newObj, setObjects)}
+              otherObjects={objects}
+              isCreate
+            />
+          )}
         </tbody>
       </table>
-
-      {editMode && (
-        <>
-          <FormikForm
-            initialValues={initialValues}
-            onSubmit={(newNames, actions) =>
-              axiosCreate(
-                props.route,
-                { id: maxObjectId + 1, ...newNames },
-                setObjects,
-                actions.resetForm
-              )
-            }
-            validationSchema={validationSchema}
-            inputId="createObject"
-            formikInputs={formikInputs}
-            submitButtonName="创建"
-          />
-        </>
-      )}
     </>
   );
 }
