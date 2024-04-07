@@ -16,6 +16,7 @@ import {
   TextInput,
   IdWithDisplayName,
 } from ".";
+import { Link } from "react-router-dom";
 
 type RowProps = {
   object: IdWithDisplayName;
@@ -29,6 +30,8 @@ function Row(props: RowProps) {
   const { object, editMode, onDelete } = { ...props };
   const [editNames, setEditNames] = React.useState(false);
   const [name, setName] = React.useState(object.name);
+  const [shortname, setShortname] = React.useState(object.shortname);
+  const hasShortName = shortname !== undefined;
 
   return (
     <tr key={object.id}>
@@ -40,18 +43,33 @@ function Row(props: RowProps) {
           <>{object.name}</>
         )}
       </td>
+      {hasShortName && (
+        <td>
+          {editNames ? (
+            <TextInput value={shortname} onChange={setShortname} />
+          ) : (
+            <>{object.shortname}</>
+          )}
+        </td>
+      )}
       {editMode && (
         <>
           <td>
             {editNames ? (
               <SvgButton
                 icon={faCheck}
-                disabled={name === ""}
+                disabled={name === "" || shortname === ""}
                 onClick={() => {
-                  if (props.otherObjects.some((p) => p.name === name)) {
+                  if (
+                    props.otherObjects.some(
+                      (p) =>
+                        p.name === name ||
+                        (hasShortName && p.shortname === shortname)
+                    )
+                  ) {
                     alert(`无法更改编号${object.id}: 名称有重复`);
                   } else {
-                    props.onEdit(newUpdatedObject(object, { name }));
+                    props.onEdit(newUpdatedObject(object, { name, shortname }));
                     setEditNames(!editNames);
                   }
                 }}
@@ -83,19 +101,43 @@ function ObjectViewTable(props: { route: string }) {
   const [editMode, setEditMode] = React.useState(false);
   const maxObjectId = Math.max(...objects.map((p) => p.id));
 
-  React.useEffect(() => axiosGetAll(props.route, setObjects), []);
+  React.useEffect(() => axiosGetAll(props.route, setObjects), [props.route]);
+
+  const hasShortName = objects.some((o) => o.shortname !== undefined);
+  const initialValues = hasShortName
+    ? { name: "", shortname: "" }
+    : { name: "" };
+  const validationSchema = Yup.object().shape(
+    hasShortName
+      ? {
+          name: yupReqStr(objects.map((p) => p.name)),
+          shortname: yupReqStr(objects.map((p) => p.shortname!)),
+        }
+      : {
+          name: yupReqStr(objects.map((p) => p.name)),
+        }
+  );
+  const formikInputs = hasShortName
+    ? [
+        { label: "新建", inputName: "name" },
+        { label: "简称", inputName: "shortname" },
+      ]
+    : [{ label: "新建", inputName: "name" }];
 
   return (
     <>
+      <Link to="/">返回主页</Link>
+      <br />
       <TextButton
-        text={editMode ? "取消编辑模式" : "编辑模式"}
+        text={editMode ? "关闭编辑模式" : "编辑模式"}
         onClick={() => setEditMode(!editMode)}
       />
       <table className={styles.objects}>
         <thead>
           <tr>
             <th>编号</th>
-            <th>项目名称</th>
+            <th>名称</th>
+            {hasShortName && <th>简称</th>}
             {editMode && (
               <>
                 <th></th>
@@ -121,7 +163,7 @@ function ObjectViewTable(props: { route: string }) {
       {editMode && (
         <>
           <FormikForm
-            initialValues={{ name: "" }}
+            initialValues={initialValues}
             onSubmit={(newNames, actions) =>
               axiosCreate(
                 props.route,
@@ -130,11 +172,9 @@ function ObjectViewTable(props: { route: string }) {
                 actions.resetForm
               )
             }
-            validationSchema={Yup.object().shape({
-              name: yupReqStr(objects.map((p) => p.name)),
-            })}
+            validationSchema={validationSchema}
             inputId="createObject"
-            formikInputs={[{ label: "新建", inputName: "name" }]}
+            formikInputs={formikInputs}
             submitButtonName="创建"
           />
         </>

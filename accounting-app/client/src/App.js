@@ -1,8 +1,6 @@
-import React from 'react';
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 import Home from "./pages/home";
-import ProjectsPage from "./pages/projects";
-import RECategoriesPage from "./pages/recategories";
+import ObjectViewTable from "./modules/ObjectViewTable";
 
 function App() {
   return (
@@ -10,8 +8,8 @@ function App() {
       <Router>
         <Routes>
           <Route path="/" exact element={<Home/>}/>
-          <Route path="/projects" exact element={<ProjectsPage/>}/>
-          <Route path="/recategories" exact element={<RECategoriesPage/>}/>
+          <Route path="/projects" exact element={<ObjectViewTable route="projects"/>}/>
+          <Route path="/recategories" exact element={<ObjectViewTable route="recategories"/>}/>
         </Routes>
       </Router>
     </div>
