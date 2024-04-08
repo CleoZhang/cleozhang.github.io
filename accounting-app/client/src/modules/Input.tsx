@@ -98,6 +98,7 @@ export type TextInputProps = {
   /** An optional ID of an element that contains guidance text that describes the input. The value will be assigned to the underlying input's aria-describedby attribute. */
   ariaDescribedBy?: string;
   includeSearchIcon?: boolean;
+  inputRef?: React.RefObject<HTMLInputElement>;
 };
 
 /** A basic modular textbox, includes default v6 styling. */
@@ -126,12 +127,11 @@ export function TextInput(props: TextInputProps) {
                 if (e.key === Key.Enter) {
                   e.preventDefault();
                   props.onEnter?.(e.target as HTMLInputElement);
-                  //CODEREVIEW
-                  console.log("jhdsgfjdsgf");
                 }
               }
             : undefined
         }
+        ref={props.inputRef}
       />
     </div>
   );

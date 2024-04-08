@@ -52,12 +52,16 @@ function Row(props: RowProps) {
     }
   }
 
+  function onEnter() {
+    !disabled && onSave();
+  }
+
   return (
     <tr key={object.id}>
       <td>{object.id}</td>
       <td>
         {editNames ? (
-          <TextInput value={name} onChange={setName} />
+          <TextInput value={name} onChange={setName} onEnter={onEnter} />
         ) : (
           <>{object.name}</>
         )}
@@ -68,7 +72,7 @@ function Row(props: RowProps) {
             <TextInput
               value={shortname!}
               onChange={setShortname}
-              onEnter={() => !disabled && onSave()}
+              onEnter={onEnter}
             />
           ) : (
             <>{object.shortname}</>
@@ -82,7 +86,7 @@ function Row(props: RowProps) {
               <SvgButton
                 icon={isCreate ? faPlus : faCheck}
                 disabled={disabled}
-                onClick={onSave}
+                onClick={onEnter}
                 title={`保存'${object.name}'`}
               />
             ) : (
