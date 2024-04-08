@@ -27,6 +27,9 @@ function Home() {
           <Link to="/recategories">收支分类</Link>
         </li>
         <li>
+          <Link to="/retypes">收支类别</Link>
+        </li>
+        <li>
           <Link to="/generalaccounts">总分类账户</Link>
         </li>
       </ul>

@@ -136,3 +136,12 @@ export function TextInput(props: TextInputProps) {
     </div>
   );
 }
+
+type SelectInputProps = React.DetailedHTMLProps<
+  React.SelectHTMLAttributes<HTMLSelectElement>,
+  HTMLSelectElement
+>;
+
+export function SelectInput(props: SelectInputProps) {
+  return <select {...props} />;
+}

@@ -11,6 +11,7 @@ const db = require('./models');
 app.use("/users", require('./routes/Users'))
 app.use("/projects", require('./routes/Projects'))
 app.use("/recategories", require('./routes/RECategories'))
+app.use("/retypes", require('./routes/RETypes'))
 app.use("/generalaccounts", require('./routes/GeneralAccounts'))
 
 db.sequelize.sync().then(() => {

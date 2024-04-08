@@ -7,6 +7,7 @@ export enum EndpointNames {
     All = "all",
     Update = "update",
 }
+
 export function getEndpoint(route: string, endpoint: EndpointNames) {
     return `${apiRoot}/${route}/${endpoint}`;
 }

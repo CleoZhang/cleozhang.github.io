@@ -1,5 +1,5 @@
 import React from "react";
-import styles from "./ObjectViewTable.module.scss";
+import styles from "./DefObjectTable.module.scss";
 import { faPen, faCheck, faPlus } from "@fortawesome/free-solid-svg-icons";
 import { faTrashCan } from "@fortawesome/free-regular-svg-icons";
 import {
@@ -11,33 +11,39 @@ import {
   axiosDelete,
   axiosUpdate,
   TextInput,
-  IdWithDisplayName,
+  DefObject,
 } from ".";
 import { Link } from "react-router-dom";
 
 const devMode: boolean = true;
 
 type RowProps = {
-  object: IdWithDisplayName;
+  object: DefObject;
   editMode: boolean;
-  onEdit: (object: IdWithDisplayName) => void;
-  otherObjects: IdWithDisplayName[];
-  onDelete?: (objectId: number) => void;
-  isCreate: boolean;
-};
+  onEdit: (object: DefObject) => void;
+  otherObjects: DefObject[];
+  hasShortname: boolean;
+  hasCategory: boolean;
+} & (
+  | { isCreate: false; onDelete: (objectId: number) => void }
+  | { isCreate: true; onDelete?: undefined }
+);
 
 function Row(props: RowProps) {
-  const { object, editMode, onDelete, isCreate } = { ...props };
+  const { object, editMode, onDelete, isCreate, hasShortname, hasCategory } = {
+    ...props,
+  };
   const [editNames, setEditNames] = React.useState(isCreate);
   const [name, setName] = React.useState(object.name);
   const [shortname, setShortname] = React.useState(object.shortname);
-  const hasShortName = object.shortname !== undefined;
-  const disabled = name === "" || (hasShortName && shortname === "");
+  const [category, setCategory] = React.useState(object.categoryId);
+
+  const disabled = name === "" || (hasShortname && shortname === "");
 
   function onSave() {
     if (
       props.otherObjects.some(
-        (p) => p.name === name || (hasShortName && p.shortname === shortname)
+        (p) => p.name === name || (hasShortname && p.shortname === shortname)
       )
     ) {
       alert(`无法${isCreate ? "添加" : "更改"}编号${object.id}: 名称有重复`);
@@ -66,7 +72,7 @@ function Row(props: RowProps) {
           <>{object.name}</>
         )}
       </td>
-      {hasShortName && (
+      {hasShortname && (
         <td>
           {editNames ? (
             <TextInput
@@ -79,6 +85,7 @@ function Row(props: RowProps) {
           )}
         </td>
       )}
+      {hasCategory && <td>{editNames ? <></> : <>{object.categoryId}</>}</td>}
       {editMode && (
         <>
           <td>
@@ -110,19 +117,23 @@ function Row(props: RowProps) {
   );
 }
 
-function ObjectViewTable(props: { route: string }) {
-  const [objects, setObjects] = React.useState<IdWithDisplayName[]>([]);
+function DefObjectTable(props: { route: string }) {
+  const [objects, setObjects] = React.useState<DefObject[]>([]);
   const [editMode, setEditMode] = React.useState(devMode);
   const maxObjectId =
     objects.length === 0 ? 0 : Math.max(...objects.map((p) => p.id));
 
   React.useEffect(() => axiosGetAll(props.route, setObjects), [props.route]);
 
-  const hasShortName = objects.some((o) => o.shortname !== undefined);
+  const hasShortName = props.route === "projects";
+  const hasCategory = props.route === "retypes";
 
-  const newObj: IdWithDisplayName = hasShortName
-    ? { id: maxObjectId + 1, name: "", shortname: "" }
-    : { id: maxObjectId + 1, name: "" };
+  const newObj: DefObject = {
+    id: maxObjectId + 1,
+    name: "",
+    shortname: "",
+    categoryId: 1,
+  };
 
   return (
     <>
@@ -138,6 +149,7 @@ function ObjectViewTable(props: { route: string }) {
             <th>编号</th>
             <th>名称</th>
             {hasShortName && <th>简称</th>}
+            {hasCategory && <th>分类</th>}
             {editMode && <th></th>}
           </tr>
         </thead>
@@ -151,6 +163,8 @@ function ObjectViewTable(props: { route: string }) {
               onEdit={(object) => axiosUpdate(props.route, object, setObjects)}
               otherObjects={objects.filter((p) => p.id !== obj.id)}
               isCreate={false}
+              hasShortname={hasShortName}
+              hasCategory={hasCategory}
             />
           ))}
           {editMode && (
@@ -160,6 +174,8 @@ function ObjectViewTable(props: { route: string }) {
               onEdit={(newObj) => axiosCreate(props.route, newObj, setObjects)}
               otherObjects={objects}
               isCreate
+              hasShortname={hasShortName}
+              hasCategory={hasCategory}
             />
           )}
         </tbody>
@@ -168,4 +184,4 @@ function ObjectViewTable(props: { route: string }) {
   );
 }
 
-export default ObjectViewTable;
+export default DefObjectTable;

@@ -1,4 +1,5 @@
-export type IdWithDisplayName = {  id: number,  name: string, shortname?: string };
+export type IdWithDisplayName = {  id: number,  name: string };
+export type DefObject = IdWithDisplayName & { shortname?: string, categoryId?: number };
 
 export type Focusable = {
     focus: () => void;

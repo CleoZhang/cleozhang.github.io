@@ -1,7 +1,7 @@
 module.exports = (sequelize, DataTypes) => {
 
-    // Revenue and expense categories table.
-    const RECategories = sequelize.define("RECategories", {
+    // Revenue and expense types table.
+    return RETypes = sequelize.define("RETypes", {
         id: {
             type:  DataTypes.INTEGER,
             allowNull: false,
@@ -14,11 +14,4 @@ module.exports = (sequelize, DataTypes) => {
             unique: true
         }
     });
-
-    RECategories.associate = (models) => {
-        RECategories.hasMany(models.RETypes, {
-            onDelete: "cascade",
-        })
-    }
-    return RECategories;
 }
