@@ -10,6 +10,7 @@ function App() {
           <Route path="/" exact element={<Home/>}/>
           <Route path="/projects" exact element={<ObjectViewTable route="projects"/>}/>
           <Route path="/recategories" exact element={<ObjectViewTable route="recategories"/>}/>
+          <Route path="/generalaccounts" exact element={<ObjectViewTable route="generalaccounts"/>}/>
         </Routes>
       </Router>
     </div>

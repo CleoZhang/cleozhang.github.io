@@ -113,7 +113,8 @@ function Row(props: RowProps) {
 function ObjectViewTable(props: { route: string }) {
   const [objects, setObjects] = React.useState<IdWithDisplayName[]>([]);
   const [editMode, setEditMode] = React.useState(devMode);
-  const maxObjectId = Math.max(...objects.map((p) => p.id));
+  const maxObjectId =
+    objects.length === 0 ? 0 : Math.max(...objects.map((p) => p.id));
 
   React.useEffect(() => axiosGetAll(props.route, setObjects), [props.route]);
 
