@@ -1,0 +1,52 @@
+.selectContainer {
+	display: flex;
+	align-items: center;
+	gap: 4px;
+
+	// If there is optional content after our <select>, don't flex it (otherwise it will shrink to accommodate the
+	// <select> when there is a long option within it).
+	> :not(:first-child) {
+		flex: none;
+	}
+}
+
+.select {
+	// Ensure we are in the border-box model, which gets overridden in certain contexts by various combinations of old styles
+	// from core.scss or base.scss.
+	box-sizing: border-box;
+
+	// Set the height of the select box specifically to the standard input height.
+	height: 21px;
+
+	// There are two width styles, either fitting the content, or stretch to parent container width.
+	&.stretch {
+		flex: auto;
+	}
+
+	&.fitContent {
+		width: fit-content;
+	}
+
+	// This ensures that there is horizontal padding on either side of the text inside the input.
+	// We want our inputs to have a fixed height so we set that above. The reason is that we rely on specific input heights to
+	// appropriately veritcally align text labels (to the left of the input) with the text inside the input. If we try to add
+	// vertical padding to mirror the text input, then since select inputs are slightly taller than text inputs, we don't have
+	// enough space for both the padding and the input. This makes the text within the input off centre.
+	// (https://stackoverflow.com/questions/8189668/why-does-select-have-a-slightly-larger-height-than-inputtype-text)
+	padding: 0 10px;
+
+	// @include inputs.standardInputFontStyle();
+	// @include inputs.standardInputBackgroundAndBorder();
+}
+
+// Additionally specify the font styles for the individual options. In some cases these will be trivially
+// inherited from the parent, but this is notoriously browser dependent. And also, options that end up in
+// optgroups can behave differently if not explicitly specified.
+.option {
+	// @include inputs.standardInputFontStyle();
+}
+
+.label {
+	// When part of the LabelledInput component, adjusts the label vertically to visually centre align with the control.
+	margin-top: 7px;
+}

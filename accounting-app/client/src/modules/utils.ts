@@ -60,3 +60,39 @@ export function classNames(...args: (Record<string, unknown> | string | null | u
 	});
 	return values.length === 0 ? undefined : values.join(' ');
 }
+
+
+/**
+ * Returns a dictionary object with a property for each item in the provided array.
+ * The key for each property is calculated using the provided keySelector, and later entries will overwrite earlier ones with the same key.
+ */
+export function toDictionary<TItem, TKey extends string | number>(
+	items: TItem[],
+	keySelector: (item: TItem) => TKey
+): Record<TKey, TItem>;
+
+/**
+ * Returns a dictionary object with a property for each item in the provided array.
+ * The key for each property is calculated using the provided keySelector, and later entries will overwrite earlier ones with the same key.
+ * The value for each property is calculated using the provided valueSelector.
+ */
+export function toDictionary<TItem, TKey extends string | number, TValue>(
+	items: TItem[],
+	keySelector: (item: TItem) => TKey,
+	valueSelector: (item: TItem) => TValue
+): Record<TKey, TValue>;
+
+// This is the implementation for the previous two function declarations.
+export function toDictionary<TItem, TKey extends string | number, TValue>(
+	items: TItem[],
+	keySelector: (item: TItem) => TKey,
+	valueSelector?: (item: TItem) => TValue
+): Record<TKey, TValue | TItem> {
+	return Object.fromEntries(
+		items.map(item => [keySelector(item), valueSelector ? valueSelector(item) : item])
+	) as Record<TKey, TValue | TItem>;
+}
+
+export function isNullOrEmpty(value: string | undefined | null | number) {
+    return value === undefined || value === null || value === ""
+}

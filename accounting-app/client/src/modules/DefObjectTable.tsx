@@ -12,6 +12,9 @@ import {
   axiosUpdate,
   TextInput,
   DefObject,
+  SelectInput,
+  isNullOrEmpty,
+  IdWithDisplayName,
 } from ".";
 import { Link } from "react-router-dom";
 
@@ -23,22 +26,26 @@ type RowProps = {
   onEdit: (object: DefObject) => void;
   otherObjects: DefObject[];
   hasShortname: boolean;
-  hasCategory: boolean;
+  reCategoryOptions?: IdWithDisplayName[];
 } & (
   | { isCreate: false; onDelete: (objectId: number) => void }
   | { isCreate: true; onDelete?: undefined }
 );
 
 function Row(props: RowProps) {
-  const { object, editMode, onDelete, isCreate, hasShortname, hasCategory } = {
+  const { object, editMode, onDelete, isCreate, hasShortname } = {
     ...props,
   };
+  const hasReCategory = props.reCategoryOptions !== undefined;
   const [editNames, setEditNames] = React.useState(isCreate);
   const [name, setName] = React.useState(object.name);
   const [shortname, setShortname] = React.useState(object.shortname);
-  const [category, setCategory] = React.useState(object.categoryId);
+  const [RECategoryId, setRECategoryId] = React.useState(object.RECategoryId);
 
-  const disabled = name === "" || (hasShortname && shortname === "");
+  const disabled =
+    isNullOrEmpty(name) ||
+    (hasShortname && isNullOrEmpty(shortname)) ||
+    (hasReCategory && isNullOrEmpty(RECategoryId));
 
   function onSave() {
     if (
@@ -48,7 +55,7 @@ function Row(props: RowProps) {
     ) {
       alert(`无法${isCreate ? "添加" : "更改"}编号${object.id}: 名称有重复`);
     } else {
-      props.onEdit(newUpdatedObject(object, { name, shortname }));
+      props.onEdit(newUpdatedObject(object, { name, shortname, RECategoryId }));
       if (isCreate) {
         setName("");
         setShortname("");
@@ -85,7 +92,25 @@ function Row(props: RowProps) {
           )}
         </td>
       )}
-      {hasCategory && <td>{editNames ? <></> : <>{object.categoryId}</>}</td>}
+      {hasReCategory && (
+        <td>
+          {editNames ? (
+            <SelectInput
+              labelled={{ id: "dropdown" }}
+              options={props.reCategoryOptions!}
+              onChange={(newId) => setRECategoryId(newId!)}
+              value={RECategoryId!}
+            />
+          ) : (
+            <>
+              {
+                props.reCategoryOptions?.find((o) => o.id === RECategoryId)
+                  ?.name
+              }
+            </>
+          )}
+        </td>
+      )}
       {editMode && (
         <>
           <td>
@@ -123,16 +148,24 @@ function DefObjectTable(props: { route: string }) {
   const maxObjectId =
     objects.length === 0 ? 0 : Math.max(...objects.map((p) => p.id));
 
-  React.useEffect(() => axiosGetAll(props.route, setObjects), [props.route]);
+  const hasShortName =
+    props.route === "projects" || props.route === "generalaccounts";
+  const hasReCategory = props.route === "retypes";
 
-  const hasShortName = props.route === "projects";
-  const hasCategory = props.route === "retypes";
+  const reCategoryOptions = React.useRef<IdWithDisplayName[]>();
+  React.useEffect(() => {
+    axiosGetAll(props.route, setObjects);
+    if (hasReCategory) {
+      axiosGetAll("recategories", (res) => (reCategoryOptions.current = res));
+      console.log(reCategoryOptions);
+    }
+  }, [props.route, hasReCategory]);
 
   const newObj: DefObject = {
     id: maxObjectId + 1,
     name: "",
     shortname: "",
-    categoryId: 1,
+    RECategoryId: 1,
   };
 
   return (
@@ -149,7 +182,7 @@ function DefObjectTable(props: { route: string }) {
             <th>编号</th>
             <th>名称</th>
             {hasShortName && <th>简称</th>}
-            {hasCategory && <th>分类</th>}
+            {hasReCategory && <th>分类</th>}
             {editMode && <th></th>}
           </tr>
         </thead>
@@ -164,7 +197,7 @@ function DefObjectTable(props: { route: string }) {
               otherObjects={objects.filter((p) => p.id !== obj.id)}
               isCreate={false}
               hasShortname={hasShortName}
-              hasCategory={hasCategory}
+              reCategoryOptions={reCategoryOptions.current}
             />
           ))}
           {editMode && (
@@ -175,7 +208,7 @@ function DefObjectTable(props: { route: string }) {
               otherObjects={objects}
               isCreate
               hasShortname={hasShortName}
-              hasCategory={hasCategory}
+              reCategoryOptions={reCategoryOptions.current}
             />
           )}
         </tbody>

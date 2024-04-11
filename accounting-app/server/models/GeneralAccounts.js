@@ -11,6 +11,11 @@ module.exports = (sequelize, DataTypes) => {
             type:  DataTypes.STRING,
             allowNull: false,
             unique: true
+        },
+        shortname: {
+            type:  DataTypes.STRING,
+            allowNull: false,
+            unique: true
         }
     });
 }
