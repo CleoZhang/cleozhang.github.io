@@ -32,6 +32,9 @@ function Home() {
         <li>
           <Link to="/generalaccounts">总分类账户</Link>
         </li>
+        <li>
+          <Link to="/businessunits">单位</Link>
+        </li>
       </ul>
 
       <ul>
