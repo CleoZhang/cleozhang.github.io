@@ -1,3 +1,5 @@
+import { IdWithDisplayName } from "./definitions";
+
 export function newUpdatedArray<T>(
     array: T[],
     selector: ((item: T, index: number, array: T[]) => boolean) | null,
@@ -95,4 +97,9 @@ export function toDictionary<TItem, TKey extends string | number, TValue>(
 
 export function isNullOrEmpty(value: string | undefined | null | number) {
     return value === undefined || value === null || value === ""
+}
+
+export function getNameById(options: IdWithDisplayName[], id: number | string) {
+    const numberId = typeof id === "number" ? id : Number(id);
+    return options.find(opt => opt.id === numberId)?.name
 }

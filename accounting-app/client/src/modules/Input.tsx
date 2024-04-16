@@ -5,11 +5,15 @@ import {
   Formik,
   FormikConfig,
   FormikValues,
+  useField,
 } from "formik";
 import React from "react";
 import styles from "./Input.module.scss";
-import { Focusable, Key, classNames } from "./";
+import { Focusable, IdWithDisplayName, Key, classNames, getNameById } from "./";
 import { TextButton } from "./Button";
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
+import { Autocomplete, TextField } from "@mui/material";
 
 export function FormikForm<
   Values extends FormikValues = FormikValues,
@@ -46,7 +50,7 @@ type FormikInputProps = {
 export function FormikInput(props: FormikInputProps & { inputId: string }) {
   return (
     <div>
-      {props.label && <label>{props.label}</label>}
+      {props.label && <label htmlFor={props.inputName}>{props.label}</label>}
       <Field
         id={props.inputId}
         name={props.inputName}
@@ -137,11 +141,91 @@ export function TextInput(props: TextInputProps) {
   );
 }
 
-type SelectInputProps = React.DetailedHTMLProps<
-  React.SelectHTMLAttributes<HTMLSelectElement>,
-  HTMLSelectElement
->;
+export function DatePickerInput(props: { name: string; label?: string }) {
+  const [field, meta, helpers] = useField(props.name);
 
-export function SelectInput(props: SelectInputProps) {
-  return <select {...props} />;
+  const { value } = meta;
+  const { setValue } = helpers;
+
+  return (
+    <>
+      {props.label && <label htmlFor={props.name}>{props.label}</label>}
+      <DatePicker
+        {...field}
+        selected={value}
+        onChange={(date) => setValue(date)}
+      />
+    </>
+  );
+}
+
+// export function AutocompleteInput(props: {
+//   label?: string;
+//   name: string;
+//   value: string;
+//   options: string[];
+//   onChange: (name: string, newValue: string | null) => void;
+//   onInputChange?: (newInputValue: string) => void;
+//   getOptionLabel?: (option: string) => string;
+//   renderInput: (params: AutocompleteRenderInputParams) => React.ReactNode;
+//   placeholder?: string;
+// }) {
+//   return (
+//     <>
+//       {props.label && <label htmlFor={props.name}>{props.label}</label>}
+//       <Autocomplete
+//         value={props.value}
+//         onChange={(_: React.SyntheticEvent, newValue: string | null) =>
+//           props.onChange(props.name, newValue)
+//         }
+//         options={props.options}
+//         onInputChange={
+//           props.onInputChange
+//             ? (_, newInputValue) => props.onInputChange?.(newInputValue)
+//             : undefined
+//         }
+//         getOptionLabel={
+//           props.getOptionLabel
+//             ? (option: string) => props.getOptionLabel?.(option) ?? ""
+//             : undefined
+//         }
+//         renderInput={(params) => (
+//           <TextField {...params} placeholder={props.placeholder} id="" />
+//         )}
+//       />
+//     </>
+//   );
+// }
+
+// Returns a string representing the provided id, whether it be a string or a number
+function idToString<TOptionId extends string | number>(id: TOptionId): string {
+  return typeof id === "number" ? id.toString() : id;
+}
+
+export function AutocompleteInput(props: {
+  label?: string;
+  name: string;
+  value: number;
+  options: IdWithDisplayName[];
+  onChange: (name: string, newValue: number | null) => void;
+  placeholder?: string;
+}) {
+  return (
+    <>
+      {props.label && <label htmlFor={props.name}>{props.label}</label>}
+      <Autocomplete
+        value={idToString(props.value)}
+        onChange={(_: React.SyntheticEvent, newValue: string | null) =>
+          props.onChange(props.name, Number(newValue))
+        }
+        options={props.options.map((o) => idToString(o.id))}
+        getOptionLabel={(option: string) =>
+          getNameById(props.options, option) ?? ""
+        }
+        renderInput={(params) => (
+          <TextField {...params} placeholder={props.placeholder} id="" />
+        )}
+      />
+    </>
+  );
 }

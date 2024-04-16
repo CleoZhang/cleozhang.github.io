@@ -18,7 +18,11 @@ module.exports = (sequelize, DataTypes) => {
     RECategories.associate = (models) => {
         RECategories.hasMany(models.RETypes, {
             onDelete: "cascade",
+            foreignKey: {
+                allowNull: false,
+            }
         })
+        models.RETypes.belongsTo(RECategories);
     }
     return RECategories;
 }

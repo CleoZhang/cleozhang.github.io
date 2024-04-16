@@ -1,6 +1,7 @@
 module.exports = (sequelize, DataTypes) => {
 
-    const BusinessUnits = sequelize.define("BusinessUnits", {
+    // Payable categories table.
+    const PayableCategories = sequelize.define("PayableCategories", {
         id: {
             type:  DataTypes.INTEGER,
             allowNull: false,
@@ -14,14 +15,14 @@ module.exports = (sequelize, DataTypes) => {
         }
     });
 
-    BusinessUnits.associate = (models) => {
-        BusinessUnits.hasMany(models.GeneralLedgerEntries, {
+    PayableCategories.associate = (models) => {
+        PayableCategories.hasMany(models.GeneralLedgerEntries, {
             onDelete: "cascade",
             foreignKey: {
                 allowNull: false,
             }
         })
-        models.GeneralLedgerEntries.belongsTo(BusinessUnits);
+        models.GeneralLedgerEntries.belongsTo(PayableCategories);
     }
-    return BusinessUnits;
+    return PayableCategories;
 }

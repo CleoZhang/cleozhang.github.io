@@ -39,13 +39,6 @@
 	// @include inputs.standardInputBackgroundAndBorder();
 }
 
-// Additionally specify the font styles for the individual options. In some cases these will be trivially
-// inherited from the parent, but this is notoriously browser dependent. And also, options that end up in
-// optgroups can behave differently if not explicitly specified.
-.option {
-	// @include inputs.standardInputFontStyle();
-}
-
 .label {
 	// When part of the LabelledInput component, adjusts the label vertically to visually centre align with the control.
 	margin-top: 7px;

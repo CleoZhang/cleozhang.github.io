@@ -35,6 +35,12 @@ function Home() {
         <li>
           <Link to="/businessunits">单位</Link>
         </li>
+        <li>
+          <Link to="/payableCategories">结算类别</Link>
+        </li>
+        <li>
+          <Link to="/generalledgerentries">台账表</Link>
+        </li>
       </ul>
 
       <ul>

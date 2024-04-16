@@ -14,6 +14,8 @@ app.use("/recategories", require('./routes/RECategories'))
 app.use("/retypes", require('./routes/RETypes'))
 app.use("/generalaccounts", require('./routes/GeneralAccounts'))
 app.use("/businessunits", require('./routes/BusinessUnits'))
+app.use("/payablecategories", require('./routes/PayableCategories'))
+app.use("/generalledgerentries", require('./routes/GeneralLedgerEntries'))
 
 db.sequelize.sync().then(() => {
     app.listen(3001, () => {

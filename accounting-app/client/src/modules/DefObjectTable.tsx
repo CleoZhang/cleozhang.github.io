@@ -127,7 +127,7 @@ function Row(props: RowProps) {
                 onClick={() => setEditNames(!editNames)}
                 title={`编辑'${object.name}'`}
               />
-            )}{" "}
+            )}
             {onDelete !== undefined && (
               <SvgButton
                 icon={faTrashCan}
@@ -157,7 +157,6 @@ function DefObjectTable(props: { route: string }) {
     axiosGetAll(props.route, setObjects);
     if (hasReCategory) {
       axiosGetAll("recategories", (res) => (reCategoryOptions.current = res));
-      console.log(reCategoryOptions);
     }
   }, [props.route, hasReCategory]);
 
@@ -183,7 +182,7 @@ function DefObjectTable(props: { route: string }) {
             <th>名称</th>
             {hasShortName && <th>简称</th>}
             {hasReCategory && <th>分类</th>}
-            {editMode && <th></th>}
+            {editMode && <th>编辑</th>}
           </tr>
         </thead>
         <tbody>
